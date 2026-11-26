@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblia Transmedia Lúdica | El Viaje Emocional de Capitán (4° y 5° Grado)</title>
+    <!-- Chosen Palette: Warm Storybook Sunlit Paper & Forest/Terracotta (Cream Paper #FDFBF7, Soft Sand #F5EFE6, Deep Charcoal #1E293B, Forest Sage #2D6A4F, Warm Amber/Terracotta #D97706 / #C85A32) -->
+    <!-- Application Structure Plan: La SPA está diseñada para articular tanto la dimensión literaria/lúdica (para niños de 8-9 años) como la arquitectura pedagógica transmedia (para docentes de 4° y 5° grado). Se divide en cuatro módulos interactivos: (1) El Cuento Ilustrado por Capítulos y Diccionario de Emociones (presenta el relato expandido, cálido y estructurado en 4 episodios con glosario interactivo de Frustración y Rabia); (2) Aventura de Bifurcación Interactiva: El Camino de Capitán (simulador jugable donde los niños toman decisiones concretas ante dilemas reales y observan la retroalimentación de causa-efecto según Piaget y autorregulación según Goleman); (3) Ecosistema Transmedia y Nodos Lúdicos (muestra cómo el cuento escrito, el videojuego de decisiones, el mapa físico del aula y el diario emocional conectan entre sí); y (4) Arquitectura Pedagógica y Analítica (fundamentación en Piaget, Goleman y competencias ciudadanas con visualizaciones interactivas). -->
+    <!-- Visualization & Content Choices: 1) Cuento y Glosario Emocional -> Objetivo: Lectura previa y alfabetización emocional -> Selector de Capítulos + Tarjetas Interactivas de Emoción (HTML/JS) -> Permite leer la historia paso a paso e inspeccionar señales corporales y estrategias de calma -> Justificación: Respeta el requisito de que los niños lean primero el cuento y conozcan las emociones. 2) Simulador de Bifurcación -> Objetivo: Experimentar causa-efecto emocional -> Árbol de decisiones jugable en tiempo real (HTML/JS) con medidores de Calma, Empatía y Avance -> Justificación: Aplica el pensamiento operacional concreto de Piaget (si Capitán hace X, ocurre Y). 3) Ecosistema Transmedia -> Objetivo: Mostrar expansión lúdica multiplataforma -> Red interactiva de 4 nodos (Libro-Álbum, Videojuego Web, Mapa Territorial en Aula, Bitácora de Manada) + Gráfico de Dona (Chart.js Canvas) -> Justificación: Evidencia cómo cada medio cumple un rol distinto sin usar SVG ni Mermaid. 4) Marco Piaget-Goleman -> Objetivo: Sustento educativo -> Gráfico Radar de Competencias Socioemocionales (Chart.js Canvas) -> Justificación: Permite al docente visualizar el impacto en convivencia escolar y autorregulación. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #FDFBF7;
+            color: #1E293B;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, .font-display {
+            font-family: 'Fredoka', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 540px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 290px;
+            max-height: 360px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 330px;
+            }
+        }
+        .story-card {
+            background-color: #FFFFFF;
+            border: 2px solid #EAE2D6;
+            box-shadow: 0 6px 24px -4px rgba(30, 41, 59, 0.06);
+        }
+        .sand-panel {
+            background-color: #F5EFE6;
+            border: 1px solid #E5DCCD;
+        }
+        .transition-smooth {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-[#2D6A4F] selection:text-white">
+
+    <header class="sticky top-0 z-50 bg-[#FDFBF7]/95 backdrop-blur-md border-b border-[#EAE2D6]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-[#D97706] text-white text-xl shadow-sm">🐕</span>
+                    <div>
+                        <span class="font-display font-bold text-base sm:text-lg text-[#1E293B] block leading-tight">La Travesía de Capitán</span>
+                        <span class="text-xs text-slate-500 hidden sm:block">Biblia Transmedia Lúdica · 4° y 5° Grado (8–9 años)</span>
+                    </div>
+                </div>
+
+                <nav class="hidden md:flex items-center space-x-1" aria-label="Navegación principal">
+                    <a href="#cuento" class="px-3 py-2 rounded-xl text-sm font-bold text-slate-700 hover:bg-[#F5EFE6] hover:text-[#2D6A4F] transition-smooth">1. El Cuento y Emociones</a>
+                    <a href="#aventura" class="px-3 py-2 rounded-xl text-sm font-bold text-slate-700 hover:bg-[#F5EFE6] hover:text-[#D97706] transition-smooth">2. Juego de Bifurcación</a>
+                    <a href="#ecosistema" class="px-3 py-2 rounded-xl text-sm font-bold text-slate-700 hover:bg-[#F5EFE6] hover:text-[#2D6A4F] transition-smooth">3. Ecosistema Transmedia</a>
+                    <a href="#pedagogia" class="px-3 py-2 rounded-xl text-sm font-bold text-slate-700 hover:bg-[#F5EFE6] hover:text-[#2D6A4F] transition-smooth">4. Marco Educativo</a>
+                </nav>
+
+                <button id="mobileMenuBtn" type="button" class="md:hidden inline-flex items-center justify-center p-2 rounded-xl text-slate-700 hover:bg-[#F5EFE6]" aria-label="Abrir menú">
+                    <span class="text-xl font-bold">☰</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="mobileMenu" class="hidden md:hidden bg-[#FDFBF7] border-b border-[#EAE2D6] px-4 pt-2 pb-4 space-y-1">
+            <a href="#cuento" class="block px-3 py-2 rounded-xl text-sm font-bold text-slate-700 hover:bg-[#F5EFE6]">1. El Cuento y Emociones</a>
+            <a href="#aventura" class="block px-3 py-2 rounded-xl text-sm font-bold text-slate-700 hover:bg-[#F5EFE6]">2. Juego de Bifurcación</a>
+            <a href="#ecosistema" class="block px-3 py-2 rounded-xl text-sm font-bold text-slate-700 hover:bg-[#F5EFE6]">3. Ecosistema Transmedia</a>
+            <a href="#pedagogia" class="block px-3 py-2 rounded-xl text-sm font-bold text-slate-700 hover:bg-[#F5EFE6]">4. Marco Educativo</a>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-16">
+
+        <!-- HERO Y PREMISE -->
+        <section class="story-card rounded-3xl p-6 sm:p-10 relative overflow-hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-8 space-y-4">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F5EFE6] border border-[#E5DCCD] text-xs font-extrabold uppercase tracking-wider text-[#2D6A4F]">
+                        <span>🐾</span> Educación Socioemocional · Literatura + Videojuego Interactivo
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1E293B] leading-tight">
+                        Las Huellas del Clima: El Viaje Emocional de Capitán
+                    </h1>
+                    <p class="text-base sm:text-lg text-slate-600 leading-relaxed">
+                        Una experiencia narrativa transmedia creada para estudiantes de <strong>4° y 5° de primaria (8 a 9 años)</strong>. Primero, los niños leen el cuento completo de Capitán y descubren qué son la <strong>frustración</strong> y la <strong>rabia</strong>; luego, entran al <strong>videojuego de bifurcación</strong> para ayudarle a tomar decisiones reflexivas basadas en causa y efecto.
+                    </p>
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <a href="#cuento" class="px-5 py-3 rounded-2xl bg-[#2D6A4F] hover:bg-[#22523D] text-white font-bold text-sm shadow-sm transition-smooth">
+                            📖 Paso 1: Leer el Cuento Completo
+                        </a>
+                        <a href="#aventura" class="px-5 py-3 rounded-2xl bg-[#D97706] hover:bg-[#B45309] text-white font-bold text-sm shadow-sm transition-smooth">
+                            🎮 Paso 2: Jugar las Decisiones
+                        </a>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-4 sand-panel rounded-2xl p-5 space-y-3">
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-[#C85A32] block">Logline de la Obra</span>
+                    <p class="text-sm text-slate-700 leading-relaxed font-semibold italic">
+                        «Cuando Capitán, un alegre perro de tierra caliente, deja su hogar y viaja hacia climas fríos y pueblos desconocidos, deberá enfrentar la frustración del cambio y la rabia frente a manadas territoriales. Con la ayuda de su amigo Ballard y las decisiones de los lectores, aprenderá que entender sus emociones es la verdadera llave para cruzar cualquier frontera.»
+                    </p>
+                    <div class="pt-2 border-t border-[#E5DCCD] flex items-center justify-between text-xs font-bold text-slate-600">
+                        <span>🎯 Edad: 8–9 años</span>
+                        <span>🧠 Piaget & Goleman</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 1: EL CUENTO ESTRUCTURADO Y DICCIONARIO DE EMOCIONES -->
+        <section id="cuento" class="scroll-mt-24 space-y-6">
+            <div class="max-w-3xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5EFE6] border border-[#E5DCCD] text-xs font-extrabold uppercase tracking-wider text-[#2D6A4F] mb-2">
+                    <span>📖</span> Paso 1 · Lectura Literaria y Alfabetización Emocional
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-[#1E293B]">
+                    El Cuento de Capitán y su Guía de Emociones
+                </h2>
+                <p class="mt-2 text-base text-slate-600 leading-relaxed">
+                    Antes de jugar, lee los <strong>4 capítulos del cuento</strong> para conocer la historia de Capitán y su amigo Ballard. A la derecha encontrarás la <strong>Guía de Emociones</strong> para reconocer qué sienten los personajes en cada escena y cómo nombrar esas emociones sin miedo.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <!-- Lector de Capítulos del Cuento -->
+                <div class="lg:col-span-7 story-card rounded-3xl p-6 sm:p-8 space-y-6">
+                    <div class="flex flex-wrap gap-2" role="tablist" aria-label="Capítulos del cuento">
+                        <button type="button" data-chap="0" class="chap-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#2D6A4F] text-white transition-smooth">
+                            Cap. 1: Tierra Caliente
+                        </button>
+                        <button type="button" data-chap="1" class="chap-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#F5EFE6] text-slate-700 hover:bg-slate-200 transition-smooth">
+                            Cap. 2: El Frío y la Frustración
+                        </button>
+                        <button type="button" data-chap="2" class="chap-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#F5EFE6] text-slate-700 hover:bg-slate-200 transition-smooth">
+                            Cap. 3: Ballard, el Guía
+                        </button>
+                        <button type="button" data-chap="3" class="chap-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#F5EFE6] text-slate-700 hover:bg-slate-200 transition-smooth">
+                            Cap. 4: La Manada Común
+                        </button>
+                    </div>
+
+                    <div id="chapterBox" class="space-y-4">
+                        <div class="flex items-center justify-between border-b border-[#EAE2D6] pb-3">
+                            <div>
+                                <span id="chapClimate" class="text-xs font-extrabold uppercase tracking-wider text-[#D97706]">☀️ Clima Cálido · Zona de Confort</span>
+                                <h3 id="chapTitle" class="text-xl sm:text-2xl font-bold text-[#1E293B] mt-1">Capítulo 1: El Hogar de las Galletas Tibias</h3>
+                            </div>
+                            <span id="chapEmoji" class="text-3xl">🍪</span>
+                        </div>
+
+                        <div id="chapText" class="space-y-3 text-base text-slate-700 leading-relaxed">
+                            <p>Capitán era un perro de pelaje corto y color miel que vivía en un valle de tierra caliente, donde el sol siempre acariciaba su lomo. Sus días favoritos consistían en correr tras las mariposas, chapotear en ríos de agua turbia y fresca, y esperar junto a la cocina a que su compañero humano horneara galletas de avena recién salidas del horno.</p>
+                            <p>En aquel valle todo era seguro y predecible: Capitán conocía cada sendero, cada árbol y cada aroma. Sin embargo, una mañana sintió una enorme curiosidad por descubrir qué había más allá de las montañas azules. Sin imaginar los retos que le esperaban lejos de su hogar, movió la cola con entusiasmo y emprendió un viaje en solitario.</p>
+                        </div>
+
+                        <div class="p-4 rounded-2xl sand-panel flex items-start gap-3">
+                            <span class="text-xl">💡</span>
+                            <div>
+                                <span class="text-xs font-extrabold uppercase tracking-wider text-[#2D6A4F] block">Pista de Lectura para 4° y 5° Grado</span>
+                                <p id="chapReflection" class="text-xs sm:text-sm text-slate-700 mt-0.5">
+                                    El valle caliente representa nuestra «zona de confort», donde todo sale como esperamos. Salir de allí es el inicio de todo aprendizaje emocional.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-2">
+                            <button id="prevChapBtn" type="button" class="px-4 py-2 rounded-xl text-xs font-bold bg-[#F5EFE6] text-slate-700 hover:bg-slate-200 disabled:opacity-40">
+                                ← Capítulo Anterior
+                            </button>
+                            <span id="chapCounter" class="text-xs font-bold text-slate-500">Capítulo 1 de 4</span>
+                            <button id="nextChapBtn" type="button" class="px-4 py-2 rounded-xl text-xs font-bold bg-[#2D6A4F] text-white hover:bg-[#22523D]">
+                                Siguiente Capítulo →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Diccionario Visual de Emociones para Niños -->
+                <div class="lg:col-span-5 space-y-4">
+                    <div class="story-card rounded-3xl p-6 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-bold text-[#1E293B]">Diccionario de Emociones</h3>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-[#F5EFE6] text-slate-600">Guía Rápida</span>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-600">
+                            Todas las emociones son válidas y nos dan información importante. Haz clic en cada emoción para ver cómo se siente en el cuerpo de Capitán y cómo podemos gestionarla:
+                        </p>
+
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <button type="button" data-emo="frustracion" class="emo-btn p-3 rounded-2xl border-2 border-[#D97706] bg-[#FEF3C7]/50 text-left transition-smooth">
+                                <span class="text-2xl block">😣</span>
+                                <span class="font-bold text-sm text-[#1E293B] block mt-1">La Frustración</span>
+                                <span class="text-[11px] text-slate-600">Cuando algo no sale como quiero</span>
+                            </button>
+                            <button type="button" data-emo="rabia" class="emo-btn p-3 rounded-2xl border-2 border-transparent bg-[#F5EFE6] hover:border-slate-300 text-left transition-smooth">
+                                <span class="text-2xl block">😠</span>
+                                <span class="font-bold text-sm text-[#1E293B] block mt-1">La Rabia</span>
+                                <span class="text-[11px] text-slate-600">Cuando siento injusticia o amenaza</span>
+                            </button>
+                            <button type="button" data-emo="empatia" class="emo-btn p-3 rounded-2xl border-2 border-transparent bg-[#F5EFE6] hover:border-slate-300 text-left transition-smooth">
+                                <span class="text-2xl block">🤝</span>
+                                <span class="font-bold text-sm text-[#1E293B] block mt-1">La Empatía</span>
+                                <span class="text-[11px] text-slate-600">Comprender lo que siente el otro</span>
+                            </button>
+                            <button type="button" data-emo="calma" class="emo-btn p-3 rounded-2xl border-2 border-transparent bg-[#F5EFE6] hover:border-slate-300 text-left transition-smooth">
+                                <span class="text-2xl block">🌿</span>
+                                <span class="font-bold text-sm text-[#1E293B] block mt-1">Autorregulación</span>
+                                <span class="text-[11px] text-slate-600">Pausar antes de actuar</span>
+                            </button>
+                        </div>
+
+                        <div id="emotionDetailCard" class="p-4 rounded-2xl bg-[#FFFBEB] border border-[#FDE68A] space-y-2.5">
+                            <div class="flex items-center gap-2">
+                                <span id="emoIcon" class="text-2xl">😣</span>
+                                <h4 id="emoName" class="font-bold text-base text-[#1E293B]">¿Qué es la Frustración?</h4>
+                            </div>
+                            <p id="emoDefinition" class="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                                Es esa sensación incómoda de desánimo y tensión que aparece cuando nos esforzamos por lograr algo (como encontrar comida o cruzar un camino), pero un obstáculo nos detiene y las cosas no salen como esperábamos.
+                            </p>
+                            <div class="pt-2 border-t border-[#FDE68A] grid grid-cols-1 gap-1.5 text-xs">
+                                <div><strong class="text-[#B45309]">🐾 Señales en Capitán:</strong> <span id="emoBody" class="text-slate-700">Orejas caídas, suspiros fuertes, patas pesadas y ganas de rendirse.</span></div>
+                                <div><strong class="text-[#2D6A4F]">🛠️ Herramienta de Calma:</strong> <span id="emoTool" class="text-slate-700">Aceptar que el plan cambió, respirar profundo y pedir ayuda a un aliado como Ballard.</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: JUEGO INTERACTIVO DE BIFURCACIÓN (CAUSA Y EFECTO) -->
+        <section id="aventura" class="scroll-mt-24 space-y-6">
+            <div class="max-w-3xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5EFE6] border border-[#E5DCCD] text-xs font-extrabold uppercase tracking-wider text-[#D97706] mb-2">
+                    <span>🎮</span> Paso 2 · Videojuego de Bifurcación (Pensamiento Causa–Efecto)
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-[#1E293B]">
+                    ¡Tú Decides el Camino de Capitán!
+                </h2>
+                <p class="mt-2 text-base text-slate-600 leading-relaxed">
+                    Ahora que conoces la historia, ayuda a Capitán a tomar decisiones importantes. Recuerda la regla de <strong>causa y consecuencia</strong>: cada elección transforma cómo se siente Capitán, cómo reacciona la <strong>Manada Común</strong> y si logra cruzar el pueblo de clima medio en paz.
+                </p>
+            </div>
+
+            <div class="story-card rounded-3xl p-6 sm:p-8 space-y-6">
+                <!-- Barra de Estado Emocional del Juego -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-2xl sand-panel">
+                    <div>
+                        <div class="flex justify-between text-xs font-extrabold text-slate-700 mb-1">
+                            <span>🌿 Calma y Autorregulación</span>
+                            <span id="statCalmText">50%</span>
+                        </div>
+                        <div class="w-full h-3 bg-white rounded-full overflow-hidden border border-[#E5DCCD]">
+                            <div id="statCalmBar" class="h-full bg-[#2D6A4F] transition-smooth" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs font-extrabold text-slate-700 mb-1">
+                            <span>🤝 Empatía con la Manada</span>
+                            <span id="statEmpathyText">40%</span>
+                        </div>
+                        <div class="w-full h-3 bg-white rounded-full overflow-hidden border border-[#E5DCCD]">
+                            <div id="statEmpathyBar" class="h-full bg-[#D97706] transition-smooth" style="width: 40%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs font-extrabold text-slate-700 mb-1">
+                            <span>🗺️ Progreso de la Travesía</span>
+                            <span id="statProgressText">Escena 1 / 3</span>
+                        </div>
+                        <div class="w-full h-3 bg-white rounded-full overflow-hidden border border-[#E5DCCD]">
+                            <div id="statProgressBar" class="h-full bg-slate-700 transition-smooth" style="width: 33%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Escenario Interactivo -->
+                <div id="gameStage" class="space-y-6">
+                    <div class="p-6 rounded-2xl bg-[#FAF6F0] border-2 border-[#EAE2D6] space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span id="sceneBadge" class="px-3 py-1 rounded-full text-xs font-extrabold bg-[#D97706] text-white">Decisión 1 · Montaña Fría (Emoción: Frustración)</span>
+                            <span id="sceneLocation" class="text-xs font-bold text-slate-500">📍 Sendero Nevado</span>
+                        </div>
+                        <h3 id="sceneTitle" class="text-xl sm:text-2xl font-bold text-[#1E293B]">
+                            El Viento Helado y el Estómago Vacío
+                        </h3>
+                        <p id="sceneNarrative" class="text-base text-slate-700 leading-relaxed">
+                            Capitán lleva horas caminando por la montaña fría. Sus patas tiemblan, no hay ríos tibios ni galletas, y un tronco caído bloquea el sendero. Siente un nudo fuerte de <strong>frustración</strong> porque nada sale como en su hogar. ¿Qué decide hacer Capitán?
+                        </p>
+                    </div>
+
+                    <!-- Opciones de Bifurcación -->
+                    <div id="choicesGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Se llena dinámicamente con JS -->
+                    </div>
+
+                    <!-- Retroalimentación de Causa y Consecuencia -->
+                    <div id="consequenceBox" class="hidden p-5 rounded-2xl border-2 space-y-3 transition-smooth">
+                        <div class="flex items-center gap-2">
+                            <span id="consequenceIcon" class="text-2xl">⚡</span>
+                            <h4 id="consequenceHeading" class="font-bold text-lg text-[#1E293B]">Consecuencia de tu Decisión</h4>
+                        </div>
+                        <p id="consequenceText" class="text-sm sm:text-base text-slate-700 leading-relaxed"></p>
+                        <div class="p-3 rounded-xl bg-white/80 text-xs font-bold text-slate-700" id="consequenceLesson"></div>
+                        <div class="pt-2 flex justify-end">
+                            <button id="nextSceneBtn" type="button" class="px-5 py-2.5 rounded-xl bg-[#2D6A4F] hover:bg-[#22523D] text-white font-bold text-sm shadow-sm transition-smooth">
+                                Continuar Travesía →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 3: ECOSISTEMA TRANSMEDIA LÚDICO (NODOS INTERCONECTADOS) -->
+        <section id="ecosistema" class="scroll-mt-24 space-y-6">
+            <div class="max-w-3xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5EFE6] border border-[#E5DCCD] text-xs font-extrabold uppercase tracking-wider text-[#2D6A4F] mb-2">
+                    <span>🕸️</span> Universo Expandido en el Aula y el Hogar
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-[#1E293B]">
+                    Ecosistema Transmedia: 4 Puertas de Entrada Lúdicas
+                </h2>
+                <p class="mt-2 text-base text-slate-600 leading-relaxed">
+                    Para que la historia de Capitán trascienda la pantalla y fortalezca la convivencia escolar, el relato se expande en cuatro formatos complementarios. Haz clic en cada nodo para explorar cómo trabajan juntos.
+                </p>
+            </div>
+
+            <div class="story-card rounded-3xl p-6 sm:p-8 space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <button type="button" data-tnode="0" class="tnode-btn text-left p-4 rounded-2xl border-2 border-[#2D6A4F] bg-[#F2F8F5] transition-smooth">
+                        <span class="text-2xl block mb-1">📚</span>
+                        <span class="text-xs font-extrabold uppercase text-[#2D6A4F]">Nodo 1 · Literatura</span>
+                        <h3 class="font-bold text-base text-[#1E293B]">Cuento Ilustrado</h3>
+                        <p class="text-xs text-slate-600 mt-1">Lectura compartida y glosario emocional.</p>
+                    </button>
+                    <button type="button" data-tnode="1" class="tnode-btn text-left p-4 rounded-2xl border-2 border-transparent bg-[#F5EFE6] hover:border-slate-300 transition-smooth">
+                        <span class="text-2xl block mb-1">🕹️</span>
+                        <span class="text-xs font-extrabold uppercase text-slate-500">Nodo 2 · Digital</span>
+                        <h3 class="font-bold text-base text-[#1E293B]">Juego de Bifurcación</h3>
+                        <p class="text-xs text-slate-600 mt-1">Simulador de decisiones causa–efecto.</p>
+                    </button>
+                    <button type="button" data-tnode="2" class="tnode-btn text-left p-4 rounded-2xl border-2 border-transparent bg-[#F5EFE6] hover:border-slate-300 transition-smooth">
+                        <span class="text-2xl block mb-1">🗺️</span>
+                        <span class="text-xs font-extrabold uppercase text-slate-500">Nodo 3 · Aula Física</span>
+                        <h3 class="font-bold text-base text-[#1E293B]">Mapa de los Climas</h3>
+                        <p class="text-xs text-slate-600 mt-1">Estaciones de calma y diálogo en el salón.</p>
+                    </button>
+                    <button type="button" data-tnode="3" class="tnode-btn text-left p-4 rounded-2xl border-2 border-transparent bg-[#F5EFE6] hover:border-slate-300 transition-smooth">
+                        <span class="text-2xl block mb-1">📓</span>
+                        <span class="text-xs font-extrabold uppercase text-slate-500">Nodo 4 · Co-Creación</span>
+                        <h3 class="font-bold text-base text-[#1E293B]">Bitácora de la Manada</h3>
+                        <p class="text-xs text-slate-600 mt-1">Finales alternativos escritos por los niños.</p>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-4 border-t border-[#EAE2D6] items-center">
+                    <div class="lg:col-span-7 space-y-3">
+                        <span id="tnodeTag" class="px-3 py-1 rounded-full text-xs font-extrabold bg-[#2D6A4F] text-white inline-block">Nodo 1 · Lenguaje y Literatura</span>
+                        <h3 id="tnodeTitle" class="text-2xl font-bold text-[#1E293B]">Cuento Ilustrado: El Viaje de Capitán</h3>
+                        <p id="tnodeDesc" class="text-sm sm:text-base text-slate-600 leading-relaxed">
+                            Es el punto de partida obligatorio. Introduce a Capitán, su zona de confort en tierra caliente, el encuentro con Ballard en tierra fría y el conflicto con la Manada Común. Incluye definiciones amigables de frustración y rabia para desestigmatizar estas emociones antes de jugar.
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                            <div class="p-3.5 rounded-xl sand-panel">
+                                <span class="text-xs font-extrabold text-slate-500 block">Rol del Estudiante</span>
+                                <span id="tnodeRole" class="text-sm font-bold text-[#1E293B]">Lector empático e identificador emocional</span>
+                            </div>
+                            <div class="p-3.5 rounded-xl sand-panel">
+                                <span class="text-xs font-extrabold text-[#2D6A4F] block">Conexión con el Siguiente Nodo</span>
+                                <span id="tnodeNext" class="text-sm font-bold text-[#1E293B]">Prepara las hipótesis para el Juego de Bifurcación</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-5 bg-[#FAF6F0] rounded-2xl p-5 border border-[#EAE2D6]">
+                        <h4 class="text-sm font-bold text-[#1E293B] text-center">Equilibrio Pedagógico del Ecosistema</h4>
+                        <p class="text-xs text-slate-500 text-center mt-1 mb-2">Distribución de experiencias entre lectura, juego digital y convivencia en aula.</p>
+                        <div class="chart-container" style="height: 240px;">
+                            <canvas id="transmediaBalanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 4: PERTINENCIA EDUCATIVA Y MARCO TEÓRICO (PIAGET & GOLEMAN) -->
+        <section id="pedagogia" class="scroll-mt-24 space-y-6">
+            <div class="max-w-3xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5EFE6] border border-[#E5DCCD] text-xs font-extrabold uppercase tracking-wider text-[#2D6A4F] mb-2">
+                    <span>🎓</span> Guía para Docentes de 4° y 5° Grado
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-[#1E293B]">
+                    Sustento Psicopedagógico: Piaget, Goleman y Ciudadanía
+                </h2>
+                <p class="mt-2 text-base text-slate-600 leading-relaxed">
+                    Esta arquitectura está diseñada específicamente para el momento evolutivo de niños entre <strong>8 y 9 años</strong>, articulando las áreas de <strong>Lenguaje y Literatura</strong>, <strong>Competencias Ciudadanas</strong> y <strong>Educación Socioemocional</strong>.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="story-card rounded-2xl p-5 border-l-4 border-l-[#D97706] space-y-2">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-lg text-[#1E293B]">1. Desarrollo Cognitivo (Jean Piaget · 8–9 años)</h3>
+                            <span class="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-[#FEF3C7] text-[#B45309]">Operaciones Concretas</span>
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            A esta edad, los niños superan el egocentrismo primario, comprenden el juego reglamentado y razonan sobre <strong>causas y consecuencias concretas</strong>. Por ello, el videojuego evita el azar y plantea hipótesis lógicas: <em>«Si Capitán gruñe con rabia ante la Manada Común, la manada se defenderá y cerrará el paso; si respira y explica su historia, abrirá el diálogo»</em>.
+                        </p>
+                    </div>
+
+                    <div class="story-card rounded-2xl p-5 border-l-4 border-l-[#2D6A4F] space-y-2">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-lg text-[#1E293B]">2. Inteligencia Emocional (Daniel Goleman)</h3>
+                            <span class="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-[#D1FAE5] text-[#065F46]">3 Pilares Clave</span>
+                        </div>
+                        <ul class="text-sm text-slate-600 space-y-1.5 leading-relaxed">
+                            <li><strong>• Autoconocimiento:</strong> Nombrar la <em>frustración</em> (cuando algo no sale bien) y la <em>rabia</em> (ante la incomodidad o el rechazo) sin sentir vergüenza ni culpa.</li>
+                            <li><strong>• Autorregulación:</strong> Practicar estrategias concretas de pausa antes de actuar impulsivamente.</li>
+                            <li><strong>• Empatía:</strong> Reconocer que los perros de la Manada Común también tienen miedo y razones detrás de su actitud territorial.</li>
+                        </ul>
+                    </div>
+
+                    <div class="story-card rounded-2xl p-5 border-l-4 border-l-slate-700 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-lg text-[#1E293B]">3. Impacto Curricular y Clima de Aula</h3>
+                            <span class="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700">Convivencia Escolar</span>
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Integra el <strong>análisis narrativo y la argumentación</strong> (Lenguaje) con la <strong>resolución pacífica de conflictos y el reconocimiento del otro</strong> (Competencias Ciudadanas y Ética), desestigmatizando las emociones difíciles en el salón de clases.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-5 story-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-base font-bold text-[#1E293B]">Impacto Formativo por Competencia</h3>
+                        <p class="text-xs text-slate-500 mt-1">
+                            Comparación entre una lectura pasiva tradicional y la experiencia transmedia interactiva de Capitán.
+                        </p>
+                    </div>
+                    <div class="chart-container my-3">
+                        <canvas id="competenciesRadarChart"></canvas>
+                    </div>
+                    <div class="p-3.5 rounded-xl sand-panel text-xs text-slate-700">
+                        <strong>Nota para el docente:</strong> El mayor salto ocurre en la <em>comprensión de causa–efecto emocional</em> y la <em>resolución pacífica de conflictos</em> entre pares.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="border-t border-[#EAE2D6] bg-[#F5EFE6] mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-600">
+            <div>
+                <strong class="text-[#1E293B]">Biblia Transmedia Lúdica: El Viaje de Capitán</strong> · Educación Socioemocional para 4° y 5° Grado (8–9 años).
+            </div>
+            <div>
+                Basado en el desarrollo cognitivo de Jean Piaget y la Inteligencia Emocional de Daniel Goleman.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function wrapLabel(str, maxLen = 16) {
+            if (str.length <= maxLen) return str;
+            const words = str.split(' ');
+            const lines = [];
+            let currentLine = '';
+            for (let i = 0; i < words.length; i++) {
+                const word = words[i];
+                if ((currentLine + ' ' + word).trim().length <= maxLen) {
+                    currentLine = (currentLine + ' ' + word).trim();
+                } else {
+                    if (currentLine) lines.push(currentLine);
+                    currentLine = word;
+                }
+            }
+            if (currentLine) lines.push(currentLine);
+            return lines;
+        }
+
+        // Menú móvil
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+        mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
+        // 1. DATOS DEL CUENTO POR CAPÍTULOS
+        const chaptersData = [
+            {
+                climate: '☀️ Clima Cálido · Zona de Confort',
+                title: 'Capítulo 1: El Hogar de las Galletas Tibias',
+                emoji: '🍪',
+                paragraphs: [
+                    'Capitán era un perro de pelaje corto y color miel que vivía en un valle de tierra caliente, donde el sol siempre acariciaba su lomo. Sus días favoritos consistían en correr tras las mariposas, chapotear en ríos de agua turbia y fresca, y esperar junto a la cocina a que su compañero humano horneara galletas de avena recién salidas del horno.',
+                    'En aquel valle todo era seguro y predecible: Capitán conocía cada sendero, cada árbol y cada aroma. Sin imaginar los retos que le esperaban lejos de su hogar, una mañana sintió una enorme curiosidad por explorar más allá de las montañas azules y emprendió una gran travesía en solitario.'
+                ],
+                reflection: 'El valle caliente representa nuestra «zona de confort», donde todo sale como esperamos. Salir de allí es el inicio de todo aprendizaje emocional.'
+            },
+            {
+                climate: '❄️ Clima Frío · Primer Encuentro con la Frustración',
+                title: 'Capítulo 2: El Sendero Helado y el Nudo en el Pecho',
+                emoji: '😣',
+                paragraphs: [
+                    'Después de caminar muchos días, el aire tibio desapareció y dio paso a un viento helado que erizaba el pelaje de Capitán. El suelo estaba cubierto de escarcha, no había ríos tibios para nadar ni olor a galletas horneadas. Por primera vez, Capitán sintió hambre, frío y una profunda incomodidad.',
+                    'Intentó cavar un refugio bajo un pino, pero la tierra estaba dura como una piedra. Capitán sintió un calor extraño subirle por el pecho y un nudo en la garganta: era la frustración, esa emoción que aparece cuando nos esforzamos mucho pero las cosas no salen como queremos.'
+                ],
+                reflection: 'Cuando el clima cambia, Capitán experimenta la frustración por primera vez. Reconocer qué siente su cuerpo es el primer paso para no rendirse.'
+            },
+            {
+                climate: '🏔️ Tierras Altas · Amistad y Aprendizaje',
+                title: 'Capítulo 3: Ballard, el Guía de Tierra Fría',
+                emoji: '🐺',
+                paragraphs: [
+                    'Cuando Capitán estaba a punto de ladrar de desesperación contra el viento, apareció Ballard, un perro robusto de pelaje espeso y mirada tranquila que conocía cada secreto de las tierras frías. Ballard no se burló de su temblor; al contrario, lo llevó a una cueva resguardada del viento y compartió con él raíces dulces y agua limpia.',
+                    'Mientras descansaban, Ballard le enseñó los mapas de los valles cercanos y le explicó que las emociones difíciles —como la frustración y la rabia— son como tormentas: no son malas, pero debemos aprender a resguardarnos y respirar antes de actuar para poder hacer nuevos amigos.'
+                ],
+                reflection: 'Ballard simboliza la importancia de pedir ayuda y contar con redes de apoyo que nos enseñan a ponerle nombre a lo que sentimos.'
+            },
+            {
+                climate: '🌤️ Clima Medio · El Conflicto con la Manada Común',
+                title: 'Capítulo 4: La Frontera del Pueblo Custodiado',
+                emoji: '🐾',
+                paragraphs: [
+                    'Con los consejos de Ballard en su memoria, Capitán continuó su viaje hasta llegar a un hermoso pueblo de clima medio, rodeado de huertos y puentes de piedra. Sin embargo, al intentar cruzar la entrada, un grupo de perros salió a cerrarle el paso con gruñidos firmes: era la Manada Común, una de las más poderosas y territoriales de la región.',
+                    'Aquellos perros habían llegado allí solos tiempo atrás y protegían el pueblo por miedo a perder su hogar. Al sentirse rechazado e injustamente tratado, Capitán sintió cómo la rabia encendía sus orejas y tensaba sus patas. Atrapado en aquella controversia, comprendió que no podría cruzar el pueblo con fuerza, sino tomando decisiones sabias para resolver el conflicto.'
+                ],
+                reflection: 'Aquí termina la lectura inicial y comienza tu misión en el videojuego: ayudar a Capitán a gestionar su rabia y dialogar con la Manada Común.'
+            }
+        ];
+
+        let currentChap = 0;
+        function renderChapter(idx) {
+            currentChap = idx;
+            const c = chaptersData[idx];
+            document.getElementById('chapClimate').textContent = c.climate;
+            document.getElementById('chapTitle').textContent = c.title;
+            document.getElementById('chapEmoji').textContent = c.emoji;
+            document.getElementById('chapText').innerHTML = c.paragraphs.map(p => `<p>${p}</p>`).join('');
+            document.getElementById('chapReflection').textContent = c.reflection;
+            document.getElementById('chapCounter').textContent = `Capítulo ${idx + 1} de 4`;
+
+            document.getElementById('prevChapBtn').disabled = idx === 0;
+            document.getElementById('nextChapBtn').textContent = idx === 3 ? 'Ir al Juego de Bifurcación ↓' : 'Siguiente Capítulo →';
+
+            document.querySelectorAll('.chap-btn').forEach((btn, i) => {
+                btn.className = i === idx
+                    ? 'chap-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#2D6A4F] text-white transition-smooth'
+                    : 'chap-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#F5EFE6] text-slate-700 hover:bg-slate-200 transition-smooth';
+            });
+        }
+
+        document.querySelectorAll('.chap-btn').forEach(btn => {
+            btn.addEventListener('click', () => renderChapter(parseInt(btn.getAttribute('data-chap'), 10)));
+        });
+        document.getElementById('prevChapBtn').addEventListener('click', () => {
+            if (currentChap > 0) renderChapter(currentChap - 1);
+        });
+        document.getElementById('nextChapBtn').addEventListener('click', () => {
+            if (currentChap < 3) {
+                renderChapter(currentChap + 1);
+            } else {
+                document.getElementById('aventura').scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+
+        // 2. DICCIONARIO DE EMOCIONES
+        const emotionsDict = {
+            frustracion: {
+                icon: '😣',
+                name: '¿Qué es la Frustración?',
+                def: 'Es esa sensación incómoda de desánimo y tensión que aparece cuando nos esforzamos por lograr algo (como encontrar comida o cruzar un camino), pero un obstáculo nos detiene y las cosas no salen como esperábamos.',
+                body: 'Orejas caídas, suspiros fuertes, patas pesadas y ganas de rendirse.',
+                tool: 'Aceptar que el plan cambió, respirar profundo y pedir ayuda a un aliado como Ballard.',
+                cardStyle: 'p-4 rounded-2xl bg-[#FFFBEB] border border-[#FDE68A] space-y-2.5'
+            },
+            rabia: {
+                icon: '😠',
+                name: '¿Qué es la Rabia?',
+                def: 'Es una emoción intensa y protectora que surge cuando sentimos que algo es injusto, cuando perdemos nuestro bienestar o cuando alguien nos amenaza (como cuando la Manada Común cierra el paso a Capitán).',
+                body: 'Corazón acelerado, calor en la cara, mandíbula apretada y ganas de gruñir o empujar.',
+                tool: 'Hacer una pausa de 5 segundos antes de hablar o actuar, para no lastimar a otros ni empeorar el problema.',
+                cardStyle: 'p-4 rounded-2xl bg-[#FEF2F2] border border-[#FECACA] space-y-2.5'
+            },
+            empatia: {
+                icon: '🤝',
+                name: '¿Qué es la Empatía?',
+                def: 'Es la capacidad de ponernos en las patas del otro para imaginar qué siente y por qué actúa así. Permite descubrir que la Manada Común no es malvada, sino que tiene miedo de perder su hogar.',
+                body: 'Mirada atenta, orejas inclinadas para escuchar y actitud abierta.',
+                tool: 'Hacer preguntas con respeto y escuchar la historia del otro antes de juzgarlo.',
+                cardStyle: 'p-4 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] space-y-2.5'
+            },
+            calma: {
+                icon: '🌿',
+                name: '¿Qué es la Autorregulación?',
+                def: 'No significa esconder lo que sentimos, sino elegir conscientemente cómo responder ante la frustración o la rabia para cuidar de nosotros mismos y de quienes nos rodean.',
+                body: 'Respiración lenta, hombros relajados y mente clara para pensar soluciones.',
+                tool: 'Respirar como si oliéramos una galleta tibia (inhalar) y sopláramos una vela suave (exhalar).',
+                cardStyle: 'p-4 rounded-2xl bg-[#F0F9FF] border border-[#BAE6FD] space-y-2.5'
+            }
+        };
+
+        document.querySelectorAll('.emo-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const key = btn.getAttribute('data-emo');
+                const e = emotionsDict[key];
+                document.querySelectorAll('.emo-btn').forEach(b => {
+                    b.className = 'emo-btn p-3 rounded-2xl border-2 border-transparent bg-[#F5EFE6] hover:border-slate-300 text-left transition-smooth';
+                });
+                btn.className = 'emo-btn p-3 rounded-2xl border-2 border-[#2D6A4F] bg-white shadow-sm text-left transition-smooth';
+
+                const card = document.getElementById('emotionDetailCard');
+                card.className = e.cardStyle;
+                document.getElementById('emoIcon').textContent = e.icon;
+                document.getElementById('emoName').textContent = e.name;
+                document.getElementById('emoDefinition').textContent = e.def;
+                document.getElementById('emoBody').textContent = e.body;
+                document.getElementById('emoTool').textContent = e.tool;
+            });
+        });
+
+        // 3. VIDEOJUEGO DE BIFURCACIÓN (PIAGET & GOLEMAN)
+        const gameScenes = [
+            {
+                badge: 'Decisión 1 · Montaña Fría (Emoción: Frustración)',
+                location: '📍 Sendero Nevado',
+                title: 'El Viento Helado y el Tronco Caído',
+                narrative: 'Capitán lleva horas caminando por la montaña fría. Sus patas tiemblan, no hay ríos tibios ni galletas, y un tronco gigante bloquea el camino. Siente un nudo fuerte de frustración porque nada sale como en su hogar. ¿Qué decide hacer Capitán?',
+                choices: [
+                    {
+                        label: 'A) Morder el tronco con furia y ladrar sin parar',
+                        tag: 'Reacción Impulsiva',
+                        calmDelta: -15,
+                        empathyDelta: 0,
+                        type: 'bad',
+                        heading: 'Consecuencia: Cansancio y Dolor',
+                        text: 'Al morder la madera congelada, Capitán se lastima los dientes y gasta toda su energía sin mover el tronco. La frustración se convierte en agotamiento.',
+                        lesson: 'Causa → Efecto: Actuar impulsivamente contra un obstáculo no resuelve el problema y nos deja sin fuerzas.'
+                    },
+                    {
+                        label: 'B) Respirar profundo, rodear el tronco y buscar refugio',
+                        tag: 'Autorregulación',
+                        calmDelta: +20,
+                        empathyDelta: +10,
+                        type: 'good',
+                        heading: 'Consecuencia: Encuentro con Ballard',
+                        text: 'Al calmar su respiración, Capitán observa con claridad un sendero lateral entre los pinos. Allí conoce a Ballard, quien le ofrece abrigo y le enseña a leer el clima.',
+                        lesson: 'Causa → Efecto: Pausar cuando aparece la frustración permite pensar soluciones nuevas y encontrar aliados.'
+                    },
+                    {
+                        label: 'C) Acostarse en la nieve y rendirse llorando',
+                        tag: 'Evitación',
+                        calmDelta: -5,
+                        empathyDelta: +5,
+                        type: 'neutral',
+                        heading: 'Consecuencia: Ballard lo Rescata a Tiempo',
+                        text: 'Capitán se queda quieto sintiendo tristeza. Por suerte, Ballard escucha sus gemidos y lo ayuda a levantarse, recordándole que pedir ayuda es valiente.',
+                        lesson: 'Causa → Efecto: Sentir desánimo es normal, pero necesitamos activar estrategias para seguir avanzando.'
+                    }
+                ]
+            },
+            {
+                badge: 'Decisión 2 · Frontera del Pueblo (Emoción: Rabia)',
+                location: '📍 Puente de Piedra · Clima Medio',
+                title: 'El Bloqueo de la Manada Común',
+                narrative: 'Al llegar al pueblo de clima medio, tres perros guardianes de la Manada Común le cierran el paso con gruñidos: «¡Nadie de fuera entra aquí!». Capitán siente que la rabia le calienta las orejas porque él solo quiere cruzar en paz. ¿Cómo responde?',
+                choices: [
+                    {
+                        label: 'A) Mostrar los dientes y lanzarse a pelear por el paso',
+                        tag: 'Agresión por Rabia',
+                        calmDelta: -20,
+                        empathyDelta: -20,
+                        type: 'bad',
+                        heading: 'Consecuencia: Toda la Manada Cierra el Puente',
+                        text: 'Al ver su ataque, diez perros más acuden a defender el pueblo. La pelea asusta a todos y la Manada Común levanta una barricada imposible de cruzar.',
+                        lesson: 'Causa → Efecto: Responder a la rabia con agresión multiplica el conflicto y cierra todas las puertas.'
+                    },
+                    {
+                        label: 'B) Dar dos pasos atrás, bajar la cola y hablar con calma',
+                        tag: 'Gestión de la Rabia',
+                        calmDelta: +20,
+                        empathyDelta: +25,
+                        type: 'good',
+                        heading: 'Consecuencia: Se Abre el Diálogo',
+                        text: 'Al ver que Capitán no busca pelear, el líder de la Manada Común deja de gruñir y pregunta con curiosidad de dónde viene y quién le enseñó los saludos de montaña.',
+                        lesson: 'Causa → Efecto: Regular la rabia demuestra seguridad y reduce el miedo de los demás.'
+                    },
+                    {
+                        label: 'C) Insultarlos desde lejos y tirar piedras con las patas',
+                        tag: 'Hostilidad',
+                        calmDelta: -10,
+                        empathyDelta: -15,
+                        type: 'bad',
+                        heading: 'Consecuencia: Desconfianza Total',
+                        text: 'Los guardianes piensan que Capitán es un forastero peligroso y se niegan a escuchar cualquier explicación.',
+                        lesson: 'Causa → Efecto: Las provocaciones rompen la posibilidad de construir confianza.'
+                    }
+                ]
+            },
+            {
+                badge: 'Decisión 3 · Asamblea en la Plaza (Emoción: Empatía)',
+                location: '📍 Plaza Central del Pueblo',
+                title: 'La Historia Detrás del Territorio',
+                narrative: 'El líder de la Manada Común confiesa que llegaron al pueblo tras ser expulsados de otros lugares y temen que los forasteros dañen sus huertos. Capitán entiende su miedo. ¿Qué propone para resolver el conflicto y cruzar el pueblo?',
+                choices: [
+                    {
+                        label: 'A) Compartir lo aprendido con Ballard y ayudar en los huertos',
+                        tag: 'Cooperación y Empatía',
+                        calmDelta: +15,
+                        empathyDelta: +30,
+                        type: 'good',
+                        heading: '¡Final Armónico: Amigo de la Manada Común!',
+                        text: 'Capitán ayuda a reforzar las cercas del huerto con las técnicas de tierra fría de Ballard. La Manada Común lo recibe con alegría, le invita agua fresca y le abre el camino hacia su gran travesía.',
+                        lesson: 'Causa → Efecto: La empatía y la cooperación convierten un conflicto territorial en una amistad duradera.'
+                    },
+                    {
+                        label: 'B) Prometer que pasará rápido sin hablar con nadie',
+                        tag: 'Acuerdo Mínimo',
+                        calmDelta: +5,
+                        empathyDelta: +5,
+                        type: 'neutral',
+                        heading: 'Final Prudente: Cruce Vigilado',
+                        text: 'La Manada Común acepta dejarlo pasar escoltado en silencio. Capitán logra cruzar el pueblo sin peleas, aunque sin hacer nuevos amigos.',
+                        lesson: 'Causa → Efecto: Respetar las normas evita el conflicto, pero la empatía es la que crea comunidad.'
+                    },
+                    {
+                        label: 'C) Exigir que le den galletas por haber esperado tanto',
+                        tag: 'Egocentrismo',
+                        calmDelta: -10,
+                        empathyDelta: -15,
+                        type: 'bad',
+                        heading: 'Final Bloqueado: Retorno a la Montaña',
+                        text: 'La Manada considera que Capitán no comprende sus necesidades y le pide regresar por donde vino hasta que aprenda a convivir.',
+                        lesson: 'Causa → Efecto: Pensar solo en nuestros deseos impide llegar a acuerdos justos.'
+                    }
+                ]
+            }
+        ];
+
+        let sceneIdx = 0;
+        let calmScore = 50;
+        let empathyScore = 40;
+
+        function updateStatsUI() {
+            calmScore = Math.max(10, Math.min(100, calmScore));
+            empathyScore = Math.max(10, Math.min(100, empathyScore));
+            document.getElementById('statCalmText').textContent = calmScore + '%';
+            document.getElementById('statCalmBar').style.width = calmScore + '%';
+            document.getElementById('statEmpathyText').textContent = empathyScore + '%';
+            document.getElementById('statEmpathyBar').style.width = empathyScore + '%';
+            document.getElementById('statProgressText').textContent = `Escena ${sceneIdx + 1} / 3`;
+            document.getElementById('statProgressBar').style.width = `${((sceneIdx + 1) / 3) * 100}%`;
+        }
+
+        function renderGameScene(idx) {
+            sceneIdx = idx;
+            updateStatsUI();
+            const s = gameScenes[idx];
+            document.getElementById('sceneBadge').textContent = s.badge;
+            document.getElementById('sceneLocation').textContent = s.location;
+            document.getElementById('sceneTitle').textContent = s.title;
+            document.getElementById('sceneNarrative').textContent = s.narrative;
+
+            const consequenceBox = document.getElementById('consequenceBox');
+            consequenceBox.classList.add('hidden');
+
+            const choicesGrid = document.getElementById('choicesGrid');
+            choicesGrid.innerHTML = '';
+
+            s.choices.forEach((choice) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'text-left p-5 rounded-2xl border-2 border-[#EAE2D6] bg-white hover:border-[#D97706] hover:bg-[#FFFBEB] transition-smooth flex flex-col justify-between space-y-3 shadow-sm';
+                btn.innerHTML = `
+                    <span class="px-2.5 py-0.5 rounded-md text-[11px] font-extrabold bg-[#F5EFE6] text-slate-700 self-start">${choice.tag}</span>
+                    <span class="font-bold text-sm sm:text-base text-[#1E293B] leading-snug">${choice.label}</span>
+                    <span class="text-xs font-bold text-[#D97706]">Elegir esta acción →</span>
+                `;
+                btn.addEventListener('click', () => handleChoice(choice, btn));
+                choicesGrid.appendChild(btn);
+            });
+        }
+
+        function handleChoice(choice, selectedBtn) {
+            calmScore += choice.calmDelta;
+            empathyScore += choice.empathyDelta;
+            updateStatsUI();
+
+            document.querySelectorAll('#choicesGrid button').forEach(b => {
+                b.disabled = true;
+                b.classList.add('opacity-60');
+            });
+            selectedBtn.classList.remove('opacity-60');
+            selectedBtn.classList.add('border-[#2D6A4F]', 'bg-[#F2F8F5]');
+
+            const box = document.getElementById('consequenceBox');
+            box.classList.remove('hidden');
+
+            if (choice.type === 'good') {
+                box.className = 'p-5 rounded-2xl border-2 border-[#2D6A4F] bg-[#ECFDF5] space-y-3 transition-smooth';
+                document.getElementById('consequenceIcon').textContent = '🌟';
+            } else if (choice.type === 'neutral') {
+                box.className = 'p-5 rounded-2xl border-2 border-[#D97706] bg-[#FFFBEB] space-y-3 transition-smooth';
+                document.getElementById('consequenceIcon').textContent = '🧭';
+            } else {
+                box.className = 'p-5 rounded-2xl border-2 border-[#C85A32] bg-[#FEF2F2] space-y-3 transition-smooth';
+                document.getElementById('consequenceIcon').textContent = '⚠️';
+            }
+
+            document.getElementById('consequenceHeading').textContent = choice.heading;
+            document.getElementById('consequenceText').textContent = choice.text;
+            document.getElementById('consequenceLesson').textContent = '🧠 ' + choice.lesson;
+
+            const nextBtn = document.getElementById('nextSceneBtn');
+            nextBtn.textContent = sceneIdx < 2 ? 'Siguiente Decisión →' : '🔄 Volver a Jugar desde el Inicio';
+        }
+
+        document.getElementById('nextSceneBtn').addEventListener('click', () => {
+            if (sceneIdx < 2) {
+                renderGameScene(sceneIdx + 1);
+            } else {
+                calmScore = 50;
+                empathyScore = 40;
+                renderGameScene(0);
+            }
+        });
+
+        renderGameScene(0);
+
+        // 4. ECOSISTEMA TRANSMEDIA LÚDICO
+        const transmediaNodes = [
+            {
+                tag: 'Nodo 1 · Lenguaje y Literatura',
+                title: 'Cuento Ilustrado: El Viaje de Capitán',
+                desc: 'Es el punto de partida obligatorio. Introduce a Capitán, su zona de confort en tierra caliente, el encuentro con Ballard en tierra fría y el conflicto con la Manada Común. Incluye definiciones amigables de frustración y rabia para desestigmatizar estas emociones antes de jugar.',
+                role: 'Lector empático e identificador emocional',
+                next: 'Prepara las hipótesis para el Juego de Bifurcación',
+                weights: [35, 25, 20, 20]
+            },
+            {
+                tag: 'Nodo 2 · Narrativa Interactiva Digital',
+                title: 'Juego de Bifurcación: Decisiones de Causa y Efecto',
+                desc: 'Videojuego conversacional donde los estudiantes de 8–9 años ponen a prueba su pensamiento lógico concreto (Piaget). Cada elección ante la frustración o la rabia transforma la relación con Ballard y la Manada Común.',
+                role: 'Tomador de decisiones reflexivas',
+                next: 'Lleva los aprendizajes al Mapa Físico del Aula',
+                weights: [20, 40, 20, 20]
+            },
+            {
+                tag: 'Nodo 3 · Convivencia en el Salón de Clases',
+                title: 'Mapa de los Climas: Estaciones de Calma en el Aula',
+                desc: 'Traslado al espacio físico escolar: el aula se divide en zonas simbólicas (Tierra Caliente, Montaña Fría de Ballard y Plaza de la Manada Común) donde los niños practican técnicas de respiración y diálogo cuando surge un conflicto real en clase.',
+                role: 'Mediador emocional entre compañeros',
+                next: 'Inspira la creación de nuevas historias en la Bitácora',
+                weights: [20, 20, 40, 20]
+            },
+            {
+                tag: 'Nodo 4 · Escritura Creativa y Ciudadanía',
+                title: 'Bitácora de la Manada: Nuevos Capítulos Co-Creados',
+                desc: 'Los estudiantes escriben e ilustran nuevos encuentros de Capitán con otros animales y emociones, convirtiéndose en autores que proponen reglas justas de convivencia para su escuela.',
+                role: 'Autor y creador de acuerdos ciudadanos',
+                next: 'Enriquece el libro colectivo del curso',
+                weights: [20, 20, 20, 40]
+            }
+        ];
+
+        const tBalanceCtx = document.getElementById('transmediaBalanceChart').getContext('2d');
+        const transmediaBalanceChart = new Chart(tBalanceCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [
+                    wrapLabel('Nodo 1: Cuento Ilustrado', 16),
+                    wrapLabel('Nodo 2: Juego Bifurcación', 16),
+                    wrapLabel('Nodo 3: Mapa en Aula', 16),
+                    wrapLabel('Nodo 4: Bitácora Manada', 16)
+                ],
+                datasets: [{
+                    data: transmediaNodes[0].weights,
+                    backgroundColor: ['#2D6A4F', '#D97706', '#475569', '#C85A32'],
+                    borderColor: '#FAF6F0',
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '56%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { font: { size: 11, family: 'Nunito' }, boxWidth: 12 }
+                    }
+                }
+            }
+        });
+
+        document.querySelectorAll('.tnode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.getAttribute('data-tnode'), 10);
+                const n = transmediaNodes[idx];
+                document.querySelectorAll('.tnode-btn').forEach(b => {
+                    b.className = 'tnode-btn text-left p-4 rounded-2xl border-2 border-transparent bg-[#F5EFE6] hover:border-slate-300 transition-smooth';
+                    b.querySelector('span:nth-child(2)').className = 'text-xs font-extrabold uppercase text-slate-500';
+                });
+                btn.className = 'tnode-btn text-left p-4 rounded-2xl border-2 border-[#2D6A4F] bg-[#F2F8F5] transition-smooth';
+                btn.querySelector('span:nth-child(2)').className = 'text-xs font-extrabold uppercase text-[#2D6A4F]';
+
+                document.getElementById('tnodeTag').textContent = n.tag;
+                document.getElementById('tnodeTitle').textContent = n.title;
+                document.getElementById('tnodeDesc').textContent = n.desc;
+                document.getElementById('tnodeRole').textContent = n.role;
+                document.getElementById('tnodeNext').textContent = n.next;
+
+                transmediaBalanceChart.data.datasets[0].data = n.weights;
+                transmediaBalanceChart.update();
+            });
+        });
+
+        // 5. GRÁFICO RADAR DE COMPETENCIAS (PIAGET & GOLEMAN)
+        const compCtx = document.getElementById('competenciesRadarChart').getContext('2d');
+        new Chart(compCtx, {
+            type: 'radar',
+            data: {
+                labels: [
+                    wrapLabel('Nombrar Frustración y Rabia', 16),
+                    wrapLabel('Lógica Causa y Efecto (Piaget)', 16),
+                    wrapLabel('Autorregulación (Goleman)', 16),
+                    wrapLabel('Empatía con el Otro', 16),
+                    wrapLabel('Argumentación Narrativa', 16)
+                ],
+                datasets: [
+                    {
+                        label: 'Biblia Transmedia Capitán',
+                        data: [95, 92, 90, 94, 88],
+                        backgroundColor: 'rgba(45, 106, 79, 0.22)',
+                        borderColor: '#2D6A4F',
+                        pointBackgroundColor: '#2D6A4F',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Lectura Tradicional sin Juego',
+                        data: [55, 50, 45, 60, 65],
+                        backgroundColor: 'rgba(217, 119, 6, 0.12)',
+                        borderColor: '#D97706',
+                        borderDash: [4, 4],
+                        pointBackgroundColor: '#D97706',
+                        borderWidth: 1.5
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 100,
+                        ticks: { display: false },
+                        pointLabels: {
+                            font: { size: 11, family: 'Nunito', weight: 'bold' },
+                            color: '#334155'
+                        },
+                        grid: { color: '#E5DCCD' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 11, family: 'Nunito' }, boxWidth: 12 }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
